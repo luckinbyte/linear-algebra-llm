@@ -83,6 +83,30 @@ $$y_i = \sum_{j=1}^{n} a_{ij} x_j = a_{i1}x_1 + a_{i2}x_2 + \cdots + a_{in}x_n$$
 
 在LLM中，这就是一个线性层（linear layer / fully connected layer）做的事。比如，前馈网络的第一步 $\mathbf{h} = \mathbf{x}W_1$，就是把一个 $d$ 维输入向量通过 $d \times 4d$ 的矩阵 $W_1$ 映射为 $4d$ 维输出向量。
 
+**两种更深的读法：列的线性组合 / 变换的复合。** 把 $\mathbf{y}=A\mathbf{x}$ 的第 $i$ 行展开 $y_i=\sum_j a_{ij}x_j$，你会自然得到一个等价但更深刻的写法——**$A\mathbf{x}$ 是 $A$ 各列的线性组合**：
+
+$$A\mathbf{x} = x_1\begin{bmatrix}a_{11}\\ \vdots \\ a_{m1}\end{bmatrix} + x_2\begin{bmatrix}a_{12}\\ \vdots \\ a_{m2}\end{bmatrix} + \cdots + x_n\begin{bmatrix}a_{1n}\\ \vdots \\ a_{mn}\end{bmatrix}$$
+
+$\mathbf{x}$ 的每个分量 $x_j$，就是"第 $j$ 列取多少份"。这个视角带来一个关键推论：**$A\mathbf{x}$ 的所有可能输出，永远落在 $A$ 的列向量所能张成的空间里**（这个空间叫**列空间**）。后面讲秩时，这会是理解"信息能活下来几维"的钥匙。
+
+更一般地，矩阵乘矩阵 $AB$ 也有两层读法：既是"行×列的点积"，也等于"$A$ 依次作用在 $B$ 的每一列上"——也就是**先做 $B$ 再做 $A$ 的复合变换**。多层 $\mathbf{y}=A_2(A_1\mathbf{x})$ 能合并成 $(A_2A_1)\mathbf{x}$，正是这个"复合"性质。
+
+**一个 2 维小例（同一乘法、两种读法）：** $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$，$\mathbf{x}=[1,1]$。
+
+- 行视角（点积）：$A\mathbf{x} = [1\cdot1+2\cdot1,\; 3\cdot1+4\cdot1] = [3,7]$
+- 列视角（线性组合）：$A\mathbf{x} = 1\cdot\begin{bmatrix}1\\3\end{bmatrix} + 1\cdot\begin{bmatrix}2\\4\end{bmatrix} = [3,7]$
+
+两种读法结果完全一致——区别在于"列视角"让你看到输出 $[3,7]$ 是怎么由 $A$ 的两列拼出来的。
+
+```python
+import numpy as np
+A = np.array([[1., 2.], [3., 4.]]); x = np.array([1., 1.])
+print("行视角 A@x =", A @ x)                 # [3. 7.]
+print("列视角    =", 1*A[:,0] + 1*A[:,1])    # [3. 7.]
+```
+
+> **一句话锚点：** $A\mathbf{x}$ 既是"每行与 $\mathbf{x}$ 的点积"，也是"$A$ 各列的线性组合"——后者揭示了输出总落在列空间里。
+
 **矩阵乘矩阵：批量流水线。** 更一般地，设 $A \in \mathbb{R}^{m \times k}$，$B \in \mathbb{R}^{k \times n}$，则乘积 $C = AB \in \mathbb{R}^{m \times n}$：
 
 $$c_{ij} = \sum_{l=1}^{k} a_{il} b_{lj}$$
