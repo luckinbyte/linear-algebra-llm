@@ -247,6 +247,26 @@ $$\det\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc$$
 
 如果 $\det(A) = 2$，意味着这个变换把空间放大了2倍。如果 $\det(A) = -1$，意味着变换翻转了方向但保持了体积。
 
+**为什么 $ad-bc$ 恰好是面积？** 把单位正方形（四个顶点 $[0,0],[1,0],[0,1],[1,1]$）经过矩阵 $A=\begin{bmatrix}a&b\\c&d\end{bmatrix}$ 变换。$[1,0]$ 变成 $A$ 的第一列 $\mathbf{c}_1=[a,c]$，$[0,1]$ 变成第二列 $\mathbf{c}_2=[b,d]$——单位正方形被"揉"成了由 $\mathbf{c}_1,\mathbf{c}_2$ 张成的平行四边形。这个平行四边形的面积，正是 $|\det A|=|ad-bc|$。而 $A$ 的**符号**记录了朝向：正号表示保持原来的手性（朝向不变），负号表示被镜像翻转了一次。
+
+**搭桥（用具体数字验证）：** 取 $A=\begin{bmatrix}2&1\\1&3\end{bmatrix}$，两列为 $\mathbf{c}_1=[2,1]$、$\mathbf{c}_2=[1,3]$。
+
+- 行列式：$\det A = 2\times3 - 1\times1 = 5$
+- 用底×高独立算面积：$\|\mathbf{c}_1\|=\sqrt5$，$\|\mathbf{c}_2\|=\sqrt{10}$，$\cos\theta=\dfrac{\mathbf{c}_1\cdot\mathbf{c}_2}{\|\mathbf{c}_1\|\|\mathbf{c}_2\|}=\dfrac{5}{\sqrt{50}}\approx0.707$，故 $\sin\theta\approx0.707$，面积 $=\|\mathbf{c}_1\|\|\mathbf{c}_2\|\sin\theta=\sqrt5\cdot\sqrt{10}\cdot0.707=5$。
+
+两条路殊途同归，都得到 5——这就是"行列式 = 面积缩放"的可信来源：变换把面积为 1 的单位正方形，放大成了面积为 5 的平行四边形。
+
+**行列式为零 = 被压扁：** 再看 $B=\begin{bmatrix}1&2\\2&4\end{bmatrix}$，第二列 $\mathbf{c}_2=[2,4]$ 恰好是 $\mathbf{c}_1=[1,2]$ 的 2 倍——两列共线，平行四边形退化成一条线段，面积 $=0=\det B$。空间被压扁了，这一维的信息彻底丢失（这正是下一节"不可逆/信息丢失"的几何根源）。
+
+```python
+import numpy as np
+A = np.array([[2., 1.], [1., 3.]]); B = np.array([[1., 2.], [2., 4.]])
+print("det A =", np.linalg.det(A))   # 5.0
+print("det B =", np.linalg.det(B))   # 0.0  (列共线 -> 压扁)
+```
+
+> **一句话锚点：** 行列式 = 变换对空间的体积（面积）缩放倍数；为 0 意味着空间被压扁、信息丢失。
+
 ### 行列式为零 = 不可逆 = 信息丢失
 
 行列式最重要的性质是：
