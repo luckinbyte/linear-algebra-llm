@@ -65,6 +65,30 @@ $$R = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{p
 
 它的特征值是 $\lambda = \cos\theta \pm i\sin\theta = e^{\pm i\theta}$，是一对共轭复数。这完全合理——旋转就是没有哪个方向是"纯粹拉伸"的，所以没有实数特征向量。
 
+**一张图看懂特征向量：单位圆变椭圆。** 把单位圆上每一个向量都经过矩阵 $A$ 变换，圆会变成一个椭圆。这个椭圆的长轴和短轴方向，正是 $A$ 的特征向量——因为只有这两个方向上的向量，变换后方向没变（只被拉伸）。而长轴、短轴的长度，正是对应特征值的绝对值 $|\lambda_1|,|\lambda_2|$。所以"特征向量是变换中只拉伸不旋转的方向"这句话，画出来就是：**圆变椭圆，长短轴即特征向量，轴长即 $|\lambda|$**。
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+A = np.array([[3., 1.], [1., 2.]])
+theta = np.linspace(0, 2*np.pi, 200)
+circle = np.array([np.cos(theta), np.sin(theta)])
+ellipse = A @ circle
+w, V = np.linalg.eigh(A)   # 对称矩阵 -> 实特征值
+
+fig, ax = plt.subplots(figsize=(6,6))
+ax.plot(circle[0], circle[1], 'b-', alpha=0.5, label='单位圆')
+ax.plot(ellipse[0], ellipse[1], 'r-', linewidth=2, label='变换后椭圆')
+for i,c in zip(range(2), ['green','purple']):
+    ax.arrow(0,0, V[0,i]*abs(w[i]), V[1,i]*abs(w[i]),
+             head_width=0.1, color=c, length_includes_head=True,
+             label=f'特征向量 $v_{i+1}$, |λ|={abs(w[i]):.1f}')
+ax.set_aspect('equal'); ax.grid(alpha=0.3); ax.legend(); ax.set_title('单位圆→椭圆：长短轴=特征向量')
+plt.savefig('eigen_circle_ellipse.png', dpi=150, bbox_inches='tight')
+plt.show()
+```
+
 ### Python可视化：看特征向量的方向
 
 ```python

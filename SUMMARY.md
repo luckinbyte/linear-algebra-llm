@@ -19,3 +19,7 @@
     * [第 12 章 低秩近似与 LoRA](ch12/README.md)
     * [第 13 章 梯度流动的矩阵视角](ch13/README.md)
     * [第 14 章 KV Cache 与推理优化](ch14/README.md)
+
+---
+
+* [附录 A：核心概念地图与速览](appendix-a/README.md)

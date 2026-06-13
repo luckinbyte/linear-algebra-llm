@@ -68,6 +68,38 @@ $$\text{cosine\_similarity}(\mathbf{a}, \mathbf{b}) = \frac{\mathbf{a} \cdot \ma
 
 当你听到ChatGPT在"计算两个词的相似度"时，它的底层操作之一就是点积——在几万维的空间里做点积。
 
+### 点积为什么能衡量相似度：投影的视角
+
+代数定义（逐位相乘求和）和几何定义（$\|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$）为什么是同一件事？又为什么点积能衡量"相似度"？答案藏在一个被跳过的概念里——**投影**。
+
+**几何含义：** 点积 $\mathbf{a}\cdot\mathbf{b}$ 等于 $\mathbf{b}$ 的长度，乘以 $\mathbf{a}$ 在 $\mathbf{b}$ 方向上的投影长度（带正负号）：
+
+$$\mathbf{a}\cdot\mathbf{b} = \|\mathbf{b}\| \times (\mathbf{a}\text{ 在 }\mathbf{b}\text{ 上的投影长度})$$
+
+把 $\mathbf{a}$ 想象成一束光，$\mathbf{b}$ 是地面——$\mathbf{a}$ 投在地面上的影子长度，就是投影长度。
+
+**搭桥：** 投影长度正是 $\|\mathbf{a}\|\cos\theta$（$\mathbf{a}$ 越长、和 $\mathbf{b}$ 夹角越小，影子越长）。把它代回上式：
+
+$$\mathbf{a}\cdot\mathbf{b} = \|\mathbf{b}\| \cdot \|\mathbf{a}\|\cos\theta = \|\mathbf{a}\|\|\mathbf{b}\|\cos\theta$$
+
+这就是两个定义等价的真正原因——**点积的几何本质是投影**，而 $\cos\theta$ 只是投影长度的另一种写法。这也解释了相似度：两个向量方向越一致（$\theta$ 越小，投影越长），点积越大；互相垂直时投影为零，点积为零。注意力机制用 $\mathbf{q}\cdot\mathbf{k}$ 衡量一个 token 对另一个 token 的"关注度"，本质上就是在算 query 在 key 方向上的投影有多大。
+
+**一个 2 维小例：** 取 $\mathbf{a}=[3,1]$，$\mathbf{b}=[2,4]$。
+
+- 代数：$\mathbf{a}\cdot\mathbf{b} = 3\times2 + 1\times4 = 10$
+- 投影：$\mathbf{a}$ 在 $\mathbf{b}$ 上的投影长度 $= \dfrac{\mathbf{a}\cdot\mathbf{b}}{\|\mathbf{b}\|} = \dfrac{10}{\sqrt{2^2+4^2}} = \dfrac{10}{\sqrt{20}} \approx 2.24$
+- 夹角：$\cos\theta = \dfrac{10}{\sqrt{10}\cdot\sqrt{20}} \approx 0.707$，即 $\theta = 45°$
+
+```python
+import numpy as np
+a, b = np.array([3., 1.]), np.array([2., 4.])
+print("点积 =", a @ b)                       # 10.0
+print("a 在 b 上的投影长度 =", a @ b / np.linalg.norm(b))  # 2.236
+print("夹角(度) =", np.degrees(np.arccos(a @ b / (np.linalg.norm(a)*np.linalg.norm(b)))))  # 45.0
+```
+
+> **一句话锚点：** 点积 = 一个向量在另一个向量方向上的"分量大小"；分量越大越相似，垂直则为零。
+
 ## 1.2 向量的维度——从音乐特征到人格画像
 
 ### Spotify怎么知道你想听什么

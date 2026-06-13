@@ -83,6 +83,30 @@ $$y_i = \sum_{j=1}^{n} a_{ij} x_j = a_{i1}x_1 + a_{i2}x_2 + \cdots + a_{in}x_n$$
 
 在LLM中，这就是一个线性层（linear layer / fully connected layer）做的事。比如，前馈网络的第一步 $\mathbf{h} = \mathbf{x}W_1$，就是把一个 $d$ 维输入向量通过 $d \times 4d$ 的矩阵 $W_1$ 映射为 $4d$ 维输出向量。
 
+**两种更深的读法：列的线性组合 / 变换的复合。** 把 $\mathbf{y}=A\mathbf{x}$ 的第 $i$ 行展开 $y_i=\sum_j a_{ij}x_j$，你会自然得到一个等价但更深刻的写法——**$A\mathbf{x}$ 是 $A$ 各列的线性组合**：
+
+$$A\mathbf{x} = x_1\begin{bmatrix}a_{11}\\ \vdots \\ a_{m1}\end{bmatrix} + x_2\begin{bmatrix}a_{12}\\ \vdots \\ a_{m2}\end{bmatrix} + \cdots + x_n\begin{bmatrix}a_{1n}\\ \vdots \\ a_{mn}\end{bmatrix}$$
+
+$\mathbf{x}$ 的每个分量 $x_j$，就是"第 $j$ 列取多少份"。这个视角带来一个关键推论：**$A\mathbf{x}$ 的所有可能输出，永远落在 $A$ 的列向量所能张成的空间里**（这个空间叫**列空间**）。后面讲秩时，这会是理解"信息能活下来几维"的钥匙。
+
+更一般地，矩阵乘矩阵 $AB$ 也有两层读法：既是"行×列的点积"，也等于"$A$ 依次作用在 $B$ 的每一列上"——也就是**先做 $B$ 再做 $A$ 的复合变换**。多层 $\mathbf{y}=A_2(A_1\mathbf{x})$ 能合并成 $(A_2A_1)\mathbf{x}$，正是这个"复合"性质。
+
+**一个 2 维小例（同一乘法、两种读法）：** $A=\begin{bmatrix}1&2\\3&4\end{bmatrix}$，$\mathbf{x}=[1,1]$。
+
+- 行视角（点积）：$A\mathbf{x} = [1\cdot1+2\cdot1,\; 3\cdot1+4\cdot1] = [3,7]$
+- 列视角（线性组合）：$A\mathbf{x} = 1\cdot\begin{bmatrix}1\\3\end{bmatrix} + 1\cdot\begin{bmatrix}2\\4\end{bmatrix} = [3,7]$
+
+两种读法结果完全一致——区别在于"列视角"让你看到输出 $[3,7]$ 是怎么由 $A$ 的两列拼出来的。
+
+```python
+import numpy as np
+A = np.array([[1., 2.], [3., 4.]]); x = np.array([1., 1.])
+print("行视角 A@x =", A @ x)                 # [3. 7.]
+print("列视角    =", 1*A[:,0] + 1*A[:,1])    # [3. 7.]
+```
+
+> **一句话锚点：** $A\mathbf{x}$ 既是"每行与 $\mathbf{x}$ 的点积"，也是"$A$ 各列的线性组合"——后者揭示了输出总落在列空间里。
+
 **矩阵乘矩阵：批量流水线。** 更一般地，设 $A \in \mathbb{R}^{m \times k}$，$B \in \mathbb{R}^{k \times n}$，则乘积 $C = AB \in \mathbb{R}^{m \times n}$：
 
 $$c_{ij} = \sum_{l=1}^{k} a_{il} b_{lj}$$
@@ -222,6 +246,26 @@ $$\det\begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc$$
 几何直觉：如果把矩阵的每一行（或每一列）看作空间中的一个向量，那么行列式的绝对值就是这些向量所张成的平行多面体的**体积**。对于 $2 \times 2$ 矩阵，就是两个行向量围成的平行四边形面积。
 
 如果 $\det(A) = 2$，意味着这个变换把空间放大了2倍。如果 $\det(A) = -1$，意味着变换翻转了方向但保持了体积。
+
+**为什么 $ad-bc$ 恰好是面积？** 把单位正方形（四个顶点 $[0,0],[1,0],[0,1],[1,1]$）经过矩阵 $A=\begin{bmatrix}a&b\\c&d\end{bmatrix}$ 变换。$[1,0]$ 变成 $A$ 的第一列 $\mathbf{c}_1=[a,c]$，$[0,1]$ 变成第二列 $\mathbf{c}_2=[b,d]$——单位正方形被"揉"成了由 $\mathbf{c}_1,\mathbf{c}_2$ 张成的平行四边形。这个平行四边形的面积，正是 $|\det A|=|ad-bc|$。而 $A$ 的**符号**记录了朝向：正号表示保持原来的手性（朝向不变），负号表示被镜像翻转了一次。
+
+**搭桥（用具体数字验证）：** 取 $A=\begin{bmatrix}2&1\\1&3\end{bmatrix}$，两列为 $\mathbf{c}_1=[2,1]$、$\mathbf{c}_2=[1,3]$。
+
+- 行列式：$\det A = 2\times3 - 1\times1 = 5$
+- 用底×高独立算面积：$\|\mathbf{c}_1\|=\sqrt5$，$\|\mathbf{c}_2\|=\sqrt{10}$，$\cos\theta=\dfrac{\mathbf{c}_1\cdot\mathbf{c}_2}{\|\mathbf{c}_1\|\|\mathbf{c}_2\|}=\dfrac{5}{\sqrt{50}}\approx0.707$，故 $\sin\theta\approx0.707$，面积 $=\|\mathbf{c}_1\|\|\mathbf{c}_2\|\sin\theta=\sqrt5\cdot\sqrt{10}\cdot0.707=5$。
+
+两条路殊途同归，都得到 5——这就是"行列式 = 面积缩放"的可信来源：变换把面积为 1 的单位正方形，放大成了面积为 5 的平行四边形。
+
+**行列式为零 = 被压扁：** 再看 $B=\begin{bmatrix}1&2\\2&4\end{bmatrix}$，第二列 $\mathbf{c}_2=[2,4]$ 恰好是 $\mathbf{c}_1=[1,2]$ 的 2 倍——两列共线，平行四边形退化成一条线段，面积 $=0=\det B$。空间被压扁了，这一维的信息彻底丢失（这正是下一节"不可逆/信息丢失"的几何根源）。
+
+```python
+import numpy as np
+A = np.array([[2., 1.], [1., 3.]]); B = np.array([[1., 2.], [2., 4.]])
+print("det A =", np.linalg.det(A))   # 5.0
+print("det B =", np.linalg.det(B))   # 0.0  (列共线 -> 压扁)
+```
+
+> **一句话锚点：** 行列式 = 变换对空间的体积（面积）缩放倍数；为 0 意味着空间被压扁、信息丢失。
 
 ### 行列式为零 = 不可逆 = 信息丢失
 
