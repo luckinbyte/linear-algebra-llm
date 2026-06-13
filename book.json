@@ -1,0 +1,13 @@
+{
+    "title": "线性代数：打开大语言模型的黑箱",
+    "author": "AI 辅助创作",
+    "language": "zh",
+    "plugins": [
+        "mathjax"
+    ],
+    "pluginsConfig": {
+        "mathjax": {
+            "svg": true
+        }
+    }
+}
