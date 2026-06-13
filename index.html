@@ -55,9 +55,35 @@
         successText: '已复制',
       },
       plugins: [
-        // MathJax integration for docsify
+        // MathJax integration for docsify.
+        // docsify renders Markdown with marked BEFORE MathJax runs. marked treats
+        // the `_` in LaTeX subscripts (e.g. \mathbf{v}_{w_I}, \sum_{w=1}^{W}) as
+        // emphasis delimiters, pairs them up, and injects raw <em> tags inside
+        // the math — eating the underscores and producing invalid LaTeX that
+        // MathJax cannot render. Fix: lift every $$...$$ and $...$ expression out
+        // of the text into placeholders in beforeEach (before marked sees it),
+        // then restore the pristine LaTeX in afterEach so MathJax typesets it.
         function mathJaxPlugin(hook) {
+          var mathStore = [];
+          hook.beforeEach(function(content) {
+            mathStore = [];
+            // display math first (may span newlines), then inline math
+            content = content.replace(/\$\$([\s\S]+?)\$\$/g, function(m) {
+              var id = mathStore.length;
+              mathStore[id] = m;
+              return '@@MD@@' + id + '@@MD@@';
+            });
+            content = content.replace(/\$([^\n$]+?)\$/g, function(m) {
+              var id = mathStore.length;
+              mathStore[id] = m;
+              return '@@MD@@' + id + '@@MD@@';
+            });
+            return content;
+          });
           hook.afterEach(function(html) {
+            html = html.replace(/@@MD@@(\d+)@@MD@@/g, function(_, id) {
+              return mathStore[id];
+            });
             return html;
           });
           hook.doneEach(function() {
